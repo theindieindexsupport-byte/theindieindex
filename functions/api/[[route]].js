@@ -11,6 +11,7 @@ import {
 } from '../_lib/auth.js';
 import { parseStoreUrl } from '../_lib/store.js';
 import { reviewSubmission, hardBlockReasons } from '../_lib/review.js';
+import { testGeminiKeys } from '../_lib/ai.js';
 
 const PAGE_SIZE = 24;
 const TICKET_TTL = 30 * 60;
@@ -162,6 +163,10 @@ async function analyze(request, env, user) {
   if ((await bump(env, '_global', 'analyses')) > global) return json({ status: 'unavailable', why: 'quota' });
 
   const result = await reviewSubmission(env, name, store);
+  if (result.status === 'unavailable') {
+    console.error('Review unavailable:', result.why, result.detail);
+    return json({ status: 'unavailable', why: result.why });
+  }
   if (result.status !== 'approved') return json(result);
 
   // Ticket assinado: prova que ESTES dados foram aprovados pela IA para ESTE usuário.
@@ -260,6 +265,12 @@ async function adminPending(env, user) {
   return json({ games: results.map((r) => publicGame(r, { admin: true })) });
 }
 
+async function adminTestGemini(env, user) {
+  requireUser(user);
+  if (!isAdmin(env, user)) throw new HttpError(403, 'Admins only.');
+  return json(await testGeminiKeys(env));
+}
+
 async function adminDecide(env, user, id, action) {
   requireUser(user);
   if (!isAdmin(env, user)) throw new HttpError(403, 'Admins only.');
@@ -295,6 +306,8 @@ export async function onRequest({ request, env, params }) {
 
     if (a === 'admin' && b === 'pending' && method === 'GET') return await adminPending(env, user);
     if (a === 'admin' && b === 'games' && c && seg[3] && method === 'POST' && ['approve', 'reject'].includes(seg[3])) return await adminDecide(env, user, id(c), seg[3]);
+
+    if (a === 'admin' && b === 'test-gemini' && method === 'POST') return await adminTestGemini(env, user);
 
     throw new HttpError(404, 'Not found.');
   } catch (e) {

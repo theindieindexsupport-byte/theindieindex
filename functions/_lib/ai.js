@@ -33,6 +33,16 @@ SHORT_DESCRIPTION: ${page.description || '(none)'}
 FULL_DESCRIPTION: ${page.body || '(none)'}`;
 }
 
+/** Mensagem de erro do Google (com a chave removida, por segurança). */
+async function describeError(res, key) {
+  let msg = '';
+  try {
+    const t = await res.text();
+    try { msg = JSON.parse(t)?.error?.message || t; } catch { msg = t; }
+  } catch { /* sem corpo */ }
+  return String(msg).split(key).join('[key]').replace(/\s+/g, ' ').slice(0, 180);
+}
+
 async function callOnce(model, key, systemPrompt, userText, ms) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
@@ -52,7 +62,7 @@ async function callOnce(model, key, systemPrompt, userText, ms) {
         },
       }),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await describeError(res, key)}`);
     const data = await res.json();
     const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? '';
     const parsed = JSON.parse(text);
@@ -89,4 +99,39 @@ export async function reviewWithGemini(env, submittedName, page, { deadlineMs = 
     }
   }
   return { ok: false, attempts };
+}
+
+/** Diagnóstico para o admin: testa cada chave x cada modelo com uma chamada mínima. */
+export async function testGeminiKeys(env) {
+  const keys = list(env.GEMINI_API_KEYS || env.GEMINI_API_KEY);
+  const models = list(env.GEMINI_MODELS || DEFAULT_MODELS);
+  const jobs = [];
+  keys.forEach((key, i) => {
+    for (const model of models) {
+      jobs.push((async () => {
+        const label = `Key ${i + 1} (…${key.slice(-4)})`;
+        const t0 = Date.now();
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 12000);
+        try {
+          const res = await fetch(`${API}/${encodeURIComponent(model)}:generateContent`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+            signal: ctrl.signal,
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: 'Reply with the single word OK.' }] }],
+              generationConfig: { maxOutputTokens: 64 },
+            }),
+          });
+          if (!res.ok) return { key: label, model, ok: false, error: `HTTP ${res.status}: ${await describeError(res, key)}` };
+          return { key: label, model, ok: true, ms: Date.now() - t0 };
+        } catch (e) {
+          return { key: label, model, ok: false, error: e.name === 'AbortError' ? 'timeout (12s)' : String(e.message || e).split(key).join('[key]') };
+        } finally {
+          clearTimeout(timer);
+        }
+      })());
+    }
+  });
+  return { keysFound: keys.length, models, results: await Promise.all(jobs) };
 }

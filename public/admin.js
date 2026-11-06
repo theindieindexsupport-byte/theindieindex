@@ -33,11 +33,35 @@ function item(g) {
   return row;
 }
 
+async function testAi() {
+  const btn = $('#testAi');
+  const out = $('#aiResult');
+  btn.disabled = true;
+  out.replaceChildren(el('p', { class: 'muted', text: 'Testing… (can take a few seconds)' }));
+  try {
+    const r = await api('admin/test-gemini', { method: 'POST' });
+    const summary = r.keysFound === 0
+      ? el('p', { class: 'form-error', text: 'No keys found. Check the GEMINI_API_KEYS variable (and redeploy after changing it).' })
+      : el('p', { text: `${r.keysFound} key(s) found · models: ${r.models.join(', ')}` });
+    const rows = r.results.map((x) => el('li', { class: 'ai-row ' + (x.ok ? 'ok' : 'bad') },
+      el('strong', { text: `${x.ok ? '✔' : '✘'} ${x.key} · ${x.model}` }),
+      el('span', { class: 'muted', text: x.ok ? ` — OK (${x.ms} ms)` : ` — ${x.error}` }),
+    ));
+    out.replaceChildren(summary, el('ul', { class: 'ai-results' }, rows));
+  } catch (e) {
+    out.replaceChildren(el('p', { class: 'form-error', text: e.message }));
+  } finally {
+    btn.disabled = false;
+  }
+}
+$('#testAi').addEventListener('click', testAi);
+
 async function render() {
   renderUserChip($('#userChip'));
   const gate = $('#gate');
   const list = $('#list');
   list.replaceChildren();
+  $('#aiSection').hidden = !auth.user?.isAdmin;
   if (!auth.user) {
     gate.replaceChildren(el('p', { text: 'Sign in with an administrator account.' }), el('div', { id: 'gbtn', class: 'google-btn' }));
     return renderGoogleButton($('#gbtn'));

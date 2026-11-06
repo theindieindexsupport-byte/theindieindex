@@ -337,3 +337,29 @@ test('config sem segredos', async () => {
   assert.deepEqual(Object.keys(c.json), ['googleClientId']);
   assert.ok(!c.raw.includes('keyA') && !c.raw.includes('xxxxxxxx'));
 });
+
+test('diagnóstico Gemini: só admin, mostra erro do Google, nunca a chave inteira', async () => {
+  const env = ENV();
+  env.GEMINI_API_KEYS = 'AQ.secretKeyNumberOne1234,AQ.secretKeyNumberTwo5678';
+  geminiBehavior = (key) => key.endsWith('1234')
+    ? new Response(JSON.stringify({ error: { message: `API key not valid: ${key}` } }), { status: 400 })
+    : Response.json({ candidates: [{ content: { parts: [{ text: 'OK' }] } }] });
+  const user = await login(env, 'someone@example.com');
+  assert.equal((await api(env, 'POST', 'admin/test-gemini', { cookie: user })).status, 403);
+  assert.equal((await api(env, 'POST', 'admin/test-gemini')).status, 401);
+  const admin = await login(env, 'boss@example.com');
+  const r = await api(env, 'POST', 'admin/test-gemini', { cookie: admin });
+  assert.equal(r.json.keysFound, 2);
+  assert.equal(r.json.results.length, 4);
+  assert.equal(r.json.results.filter((x) => x.ok).length, 2);
+  assert.match(r.json.results.find((x) => !x.ok).error, /HTTP 400: API key not valid: \[key\]/);
+  assert.ok(!r.raw.includes('secretKeyNumberOne') && !r.raw.includes('secretKeyNumberTwo'), 'chave completa vazou');
+});
+
+test('analyze não vaza detalhes técnicos da IA para o público', async () => {
+  const env = ENV();
+  geminiBehavior = () => new Response('boom', { status: 401 });
+  const cookie = await login(env);
+  const a = await api(env, 'POST', 'analyze', { cookie, body: { name: 'Star Fox', url: 'https://foxgames.itch.io/star-fox' } });
+  assert.deepEqual(Object.keys(a.json).sort(), ['status', 'why']);
+});

@@ -124,3 +124,9 @@
 .prose ul { margin: 0 0 1rem 1.4rem; display: grid; gap: .5rem; color: #d6d6d6; }
 .prose a, footer a { color: var(--primary-blue); }
 .prose code { font-family: var(--font-mono); background: #242424; padding: .1rem .4rem; border-radius: 3px; font-size: .9em; }
+
+/* ---- diagnóstico das chaves Gemini ---- */
+.ai-results { list-style: none; display: grid; gap: .6rem; margin-top: 1rem; }
+.ai-row { padding: .7rem 1rem; border-radius: 4px; background: var(--bg-dark); border-left: 4px solid #444; overflow-wrap: anywhere; }
+.ai-row.ok { border-left-color: #3ecf8e; }
+.ai-row.bad { border-left-color: #ff6b6b; }
