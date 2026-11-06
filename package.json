@@ -1,0 +1,6 @@
+{
+  "name": "the-indie-index",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test tests/api.test.mjs" }
+}

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Indie Index | Curated Indie Games</title>
+    <meta name="description" content="A curated home for indie games made by real developers. No spam, no AI-generated filler.">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="portal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container-nav">
+            <a href="/" class="logo"><img src="icon.png" alt="The Indie Index" class="logo-img"></a>
+            <ul class="nav-links">
+                <li><a href="#catalog">Games</a></li>
+                <li><a href="trailers.html">YouTube Showcase</a></li>
+                <li><a href="https://discord.gg/8jXTQZjbPv" target="_blank" rel="noopener noreferrer">Discord</a></li>
+                <li id="userChip" class="user-chip"></li>
+                <li><button id="openSubmit" class="btn-nav btn-nav-button" type="button">SUBMIT GAME</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero hero-compact">
+        <div class="hero-content">
+            <h1>The Indie Index</h1>
+            <p>A curated home for indie games. Made by real developers, free of spam and AI-generated filler.</p>
+            <form id="searchForm" class="hero-search" role="search">
+                <input id="searchInput" type="search" placeholder="Search games or tags…" aria-label="Search games" maxlength="60" autocomplete="off">
+                <button class="btn-primary" type="submit">Search</button>
+            </form>
+        </div>
+    </header>
+
+    <section id="catalog" class="section">
+        <div class="container">
+            <div class="catalog-head">
+                <h2>Games</h2>
+                <label class="sort">
+                    <span class="sr-only">Sort by</span>
+                    <select id="sortSelect">
+                        <option value="new">Newest first</option>
+                        <option value="az">A → Z</option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="tagBar" class="tag-bar" aria-label="Filter by tag"></div>
+            <p id="resultInfo" class="muted result-info" aria-live="polite"></p>
+
+            <div id="grid" class="game-grid"></div>
+            <div id="emptyState" class="empty-state" hidden>
+                <h3>No games here yet</h3>
+                <p>Be the first to put your game on the Index.</p>
+                <button class="btn-primary" type="button" data-open-submit>Submit your game</button>
+            </div>
+            <div class="load-more-wrap"><button id="loadMore" class="btn-secondary" type="button" hidden>Load more</button></div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 The Indie Index. All rights reserved.</p>
+    </footer>
+
+    <!-- ============ Diálogo de envio de jogo ============ -->
+    <dialog id="submitDialog" class="modal" aria-labelledby="submitTitle">
+        <div class="modal-head">
+            <h2 id="submitTitle">Submit a game</h2>
+            <button class="modal-close" type="button" id="closeSubmit" aria-label="Close">&times;</button>
+        </div>
+
+        <!-- 0. login -->
+        <section id="stepSignin" class="step" hidden>
+            <p>Sign in with Google so we can keep the catalog safe and let you manage your submissions. We only see your name, email and avatar.</p>
+            <div id="googleBtn" class="google-btn"></div>
+        </section>
+
+        <!-- 1. formulário -->
+        <section id="stepForm" class="step" hidden>
+            <form id="analyzeForm" novalidate>
+                <div class="form-group">
+                    <label for="gName">Game name</label>
+                    <input id="gName" type="text" required maxlength="80" placeholder="E.g.: Star Fox Platformer" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="gUrl">Store link</label>
+                    <input id="gUrl" type="url" required placeholder="https://yourstudio.itch.io/your-game" autocomplete="off">
+                    <small>itch.io game page or Steam store page. We read the page and fill in the rest for you.</small>
+                </div>
+                <div class="rules-box">
+                    <strong>Not accepted:</strong> visual novels, games with AI-generated art / writing / audio, spam or asset flips, and explicit adult content.
+                </div>
+                <p id="formError" class="form-error" role="alert" hidden></p>
+                <button class="btn-submit" type="submit">Analyze my game</button>
+            </form>
+
+            <details id="myGames" class="my-games" hidden>
+                <summary>Your submissions</summary>
+                <ul id="myGamesList"></ul>
+            </details>
+        </section>
+
+        <!-- 2. analisando -->
+        <section id="stepWorking" class="step center" hidden>
+            <div class="spinner" aria-hidden="true"></div>
+            <p id="workingText">Reading your store page and reviewing it…</p>
+        </section>
+
+        <!-- 3a. aprovado -->
+        <section id="stepApproved" class="step" hidden>
+            <p class="ok-banner">Looks great — your game passed the review. Here is how it will appear:</p>
+            <div id="previewSlot"></div>
+            <p id="publishError" class="form-error" role="alert" hidden></p>
+            <div class="btn-row">
+                <button id="publishBtn" class="btn-submit" type="button">Publish game</button>
+                <button class="btn-secondary" type="button" data-back>Cancel</button>
+            </div>
+        </section>
+
+        <!-- 3b. reprovado -->
+        <section id="stepRejected" class="step" hidden>
+            <p class="bad-banner">This game can't be listed:</p>
+            <ul id="rejectReasons" class="reasons"></ul>
+            <button class="btn-secondary" type="button" data-back>Try another game</button>
+        </section>
+
+        <!-- 3c. manual -->
+        <section id="stepManual" class="step" hidden>
+            <p id="manualIntro" class="info-banner"></p>
+            <form id="manualForm" novalidate>
+                <div class="form-group">
+                    <label for="mDesc">Short description</label>
+                    <textarea id="mDesc" rows="3" maxlength="200" required placeholder="What is your game about? (max 200 characters)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="mTags">Tags</label>
+                    <input id="mTags" type="text" required placeholder="platformer, pixel art, singleplayer" autocomplete="off">
+                    <small>Up to 6, separated by commas.</small>
+                </div>
+                <div class="form-group">
+                    <label for="mCover">Cover art</label>
+                    <input id="mCover" type="file" accept="image/png,image/jpeg,image/webp" required>
+                    <small>We resize it automatically (16:9 works best).</small>
+                    <img id="mCoverPreview" class="cover-preview" alt="" hidden>
+                </div>
+                <p id="manualError" class="form-error" role="alert" hidden></p>
+                <div class="btn-row">
+                    <button class="btn-submit" type="submit">Send for review</button>
+                    <button class="btn-secondary" type="button" data-back>Cancel</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 4. concluído -->
+        <section id="stepDone" class="step center" hidden>
+            <h3 id="doneTitle"></h3>
+            <p id="doneText"></p>
+            <button class="btn-primary" type="button" id="doneBtn">Close</button>
+        </section>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

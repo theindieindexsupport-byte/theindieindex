@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Showcase | The Indie Index</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="portal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container-nav">
+            <a href="/" class="logo">
+                <img src="icon.png" alt="The Indie Index Logo" class="logo-img">
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Games</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="https://discord.gg/8jXTQZjbPv" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
+                <li><a href="#protocol">Protocol</a></li>
+                <li><a href="#submit" class="btn-nav">SUBMIT PROJECT</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>YouTube Showcase</h1>
+            <p>The Indie Elite Access Point. The most rigorous curation. The ultimate showcase. Join the exclusive selection of The Indie Index.</p>
+            <a href="#protocol" class="btn-primary">Access Protocol</a>
+        </div>
+    </header>
+
+    <section id="about" class="section">
+        <div class="container">
+            <h2>The Quality Standard</h2>
+            <p><strong>The Indie Index</strong> is not just a channel; it's a seal of approval. We seek authentic, highly polished projects that deserve to be in the spotlight. If your game has what it takes, we provide the stage.</p>
+        </div>
+    </section>
+
+    <section id="protocol" class="section bg-light">
+        <div class="container">
+            <h2>Submission Protocol</h2>
+            <p>To maintain our standard, we do not accept loose YouTube links. Strictly follow the steps below:</p>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <span class="step-number">01</span>
+                    <h3>Download the Template</h3>
+                    <p>Download our official PSD file. This is the mandatory base template for your Thumbnail, which must be submitted alongside your trailer.</p>
+                    <a href="https://www.dropbox.com/scl/fi/74747o49slsbaajq5si6t/Thumbnail-Template-The-Indie-Index.zip?rlkey=qa8q6se3h30mj5r548ad2papi&st=a6nay8rm&dl=0" class="btn-text" target="_blank" rel="noopener noreferrer">Download Official PSD &darr;</a>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">02</span>
+                    <h3>Prepare the Assets</h3>
+                    <p>Render the video in at least 1080p (60fps). Save your final Thumbnail in high quality based on our official template.</p>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">03</span>
+                    <h3>Compress into a ZIP</h3>
+                    <p>Place strictly the video and the final Thumbnail image into a single .ZIP file. The final file must not exceed 2GB.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="submit" class="section">
+        <div class="container form-container">
+            <h2>Submit Your Project</h2>
+            <form id="submissionForm">
+                <div class="form-group">
+                    <label for="gameName">Game Name</label>
+                    <input type="text" id="gameName" name="gameName" required placeholder="E.g.: My Game">
+                </div>
+                
+                <div class="form-group">
+                    <label for="devName">Studio or Developer</label>
+                    <input type="text" id="devName" name="devName" required placeholder="Your name or team name">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Contact Email</label>
+                    <input type="email" id="email" name="email" required placeholder="dev@studio.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="synopsis">Game Synopsis</label>
+                    <textarea id="synopsis" name="synopsis" rows="4" required placeholder="Tell us about your game, core mechanics, and story..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="zipLink">Link to the .ZIP file (Google Drive, Dropbox, etc.)</label>
+                    <input type="url" id="zipLink" name="zipLink" required placeholder="https://...">
+                    <small>Make sure the link is set to public/open for reading.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="comments">Additional Comments (Optional)</label>
+                    <textarea id="comments" name="comments" rows="3" placeholder="Anything else we should know?"></textarea>
+                </div>
+
+                <div class="form-checkbox">
+                    <input type="checkbox" id="rulesCheck" required>
+                    <label for="rulesCheck">I confirm that I have prepared the thumbnail using the official template and followed all protocol rules.</label>
+                </div>
+
+                <button type="submit" class="btn-submit">Submit for Review</button>
+            </form>
+            <div id="formFeedback" class="hidden"></div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 The Indie Index. All rights reserved.</p>
+    </footer>
+
+    <script src="trailers.js"></script>
+</body>
+</html>
